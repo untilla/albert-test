@@ -9,6 +9,7 @@ import styled from 'styled-components/native';
 import { Animated, Text, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { RootState } from '../../redux/store';
 import { fetchPersons } from './actions';
 import { IPerson } from '../../entitys/person';
@@ -196,8 +197,11 @@ const Loader = styled.ActivityIndicator`
 const FilmDetails: React.FC = (): JSX.Element => {
   const arrow = useRef(new Animated.ValueXY());
   const dispatch = useDispatch();
-  const { films } = useSelector((state: RootState) => state.app);
-  const film = films[0];
+  const navigation = useNavigation();
+  const route = useRoute();
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const { film } = route.params;
   const { persons, loading, loaded } = useSelector(
     (state: RootState) => state.film,
   );
@@ -284,7 +288,7 @@ const FilmDetails: React.FC = (): JSX.Element => {
           </PersonInfoContainer>
         </>
       )}
-      <BackButton>
+      <BackButton onPress={() => navigation.goBack()}>
         <BackButtonImg source={require('./assets/images/arrow_back_ios.png')} />
       </BackButton>
     </MainView>

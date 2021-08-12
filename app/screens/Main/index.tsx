@@ -217,7 +217,11 @@ const Main: React.FC<IMainProps> = ({ navigation }): JSX.Element => {
             return (
               <FilmBlock
                 key={key}
-                onPress={() => navigation.navigate('FilmDetails')}
+                onPress={() =>
+                  navigation.navigate('FilmDetails', {
+                    film,
+                  })
+                }
               >
                 <FilmPosterContainer>
                   <FilmPoster source={poster} />
