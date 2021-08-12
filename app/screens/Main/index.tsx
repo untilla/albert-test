@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { convertToRoman } from '../../lib/convertToRoman';
 import { fetchFilms } from '../../redux/actions';
+import { IMainProps } from './types';
 
 const MainView = styled.View.attrs(() => ({
   paddingTop: Constants.statusBarHeight,
@@ -109,7 +110,7 @@ const PostersContainer = styled.ScrollView.attrs(() => ({
   },
 }))``;
 
-const FilmBlock = styled.View`
+const FilmBlock = styled.TouchableOpacity`
   flex-direction: column;
   margin-right: 16px;
 `;
@@ -164,7 +165,7 @@ const YearText = styled.Text`
   color: #ffffff;
 `;
 
-const Main: React.FC = (): JSX.Element => {
+const Main: React.FC<IMainProps> = ({ navigation }): JSX.Element => {
   const { films, loading } = useSelector((state: RootState) => state.app);
   const dispatch = useDispatch();
   const posters = useMemo(
@@ -214,7 +215,10 @@ const Main: React.FC = (): JSX.Element => {
           {films.map((film, key) => {
             const poster = posters[film.episode_id - 1] || posters[0];
             return (
-              <FilmBlock key={key}>
+              <FilmBlock
+                key={key}
+                onPress={() => navigation.navigate('FilmDetails')}
+              >
                 <FilmPosterContainer>
                   <FilmPoster source={poster} />
                 </FilmPosterContainer>

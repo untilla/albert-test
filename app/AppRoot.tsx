@@ -33,7 +33,7 @@ const AppRoot: React.FC = (): JSX.Element => {
       ) : (
         <Stack.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="FilmDetails"
+          initialRouteName="Main"
         >
           <Stack.Screen name="Main" component={Main} />
           <Stack.Screen name="FilmDetails" component={FilmDetails} />
