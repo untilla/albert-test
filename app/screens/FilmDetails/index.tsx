@@ -208,10 +208,11 @@ const FilmDetails: React.FC = (): JSX.Element => {
   const [person, setPerson] = useState<number>(0);
   const handleSetPerson = useCallback(
     (key: number) => {
+      setPerson(key);
       Animated.spring(arrow.current, {
         toValue: { x: 0, y: key * 40 },
         useNativeDriver: true,
-      }).start(() => setPerson(key));
+      }).start();
     },
     [arrow],
   );

@@ -1,13 +1,20 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Constants from 'expo-constants';
 import moment from 'moment';
 import styled from 'styled-components/native';
-import { RefreshControl, TextInput } from 'react-native';
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  RefreshControl,
+  TextInput,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { convertToRoman } from '../../lib/convertToRoman';
 import { fetchFilms } from '../../redux/actions';
 import { IMainProps } from './types';
+import { uInt } from '../../lib/uInt';
 
 const MainView = styled.View.attrs(() => ({
   paddingTop: Constants.statusBarHeight,
@@ -110,7 +117,7 @@ const PostersContainer = styled.ScrollView.attrs(() => ({
   },
 }))``;
 
-const FilmBlock = styled.TouchableOpacity`
+const FilmBlock = styled.View`
   flex-direction: column;
   margin-right: 16px;
 `;
@@ -146,28 +153,33 @@ const FilmSubTitle = styled.Text`
   color: #999999;
 `;
 
-const YearContainer = styled.View`
+interface IYearProps {
+  active: boolean;
+}
+
+const YearContainer = styled.View<IYearProps>`
   margin-top: 32px;
   width: 35px;
   height: 19px;
   justify-content: center;
   align-items: center;
-  background-color: #333333;
+  background-color: ${(props) => (props.active ? '#facb03' : '#333333')};
   border-radius: 16px;
 `;
 
-const YearText = styled.Text`
+const YearText = styled.Text<IYearProps>`
   font-family: Gilroy-Bold;
   font-style: normal;
   font-weight: bold;
   font-size: 12px;
   text-align: center;
-  color: #ffffff;
+  color: ${(props) => (props.active ? '#000' : '#ffffff')};
 `;
 
 const Main: React.FC<IMainProps> = ({ navigation }): JSX.Element => {
   const { films, loading } = useSelector((state: RootState) => state.app);
   const dispatch = useDispatch();
+  const [active, setActive] = useState<number>(0);
   const posters = useMemo(
     () => [
       require(`./assets/images/posters/1.jpeg`),
@@ -182,6 +194,18 @@ const Main: React.FC<IMainProps> = ({ navigation }): JSX.Element => {
     ],
     [],
   );
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const activeBlock = uInt(
+        Math.round(event.nativeEvent.contentOffset.x / (255 + 16)),
+      );
+      if (activeBlock !== active) {
+        setActive(activeBlock);
+      }
+    },
+    [active],
+  );
+
   return (
     <MainView>
       <MainContainer
@@ -211,25 +235,33 @@ const Main: React.FC<IMainProps> = ({ navigation }): JSX.Element => {
           </SearchContainer>
         </HeaderContainer>
         <MainTitle>Star Wars films:</MainTitle>
-        <PostersContainer horizontal showsHorizontalScrollIndicator={false}>
+        <PostersContainer
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={64}
+        >
           {films.map((film, key) => {
             const poster = posters[film.episode_id - 1] || posters[0];
             return (
-              <FilmBlock
-                key={key}
-                onPress={() =>
-                  navigation.navigate('FilmDetails', {
-                    film,
-                  })
-                }
-              >
-                <FilmPosterContainer>
-                  <FilmPoster source={poster} />
-                </FilmPosterContainer>
+              <FilmBlock key={key}>
+                <TouchableWithoutFeedback
+                  onPress={() =>
+                    navigation.navigate('FilmDetails', {
+                      film,
+                    })
+                  }
+                >
+                  <FilmPosterContainer>
+                    <FilmPoster source={poster} />
+                  </FilmPosterContainer>
+                </TouchableWithoutFeedback>
                 <FilmTitle>Episode {convertToRoman(film.episode_id)}</FilmTitle>
                 <FilmSubTitle>{film.title}</FilmSubTitle>
-                <YearContainer>
-                  <YearText>{moment(film.release_date).year()}</YearText>
+                <YearContainer active={key === active}>
+                  <YearText active={key === active}>
+                    {moment(film.release_date).year()}
+                  </YearText>
                 </YearContainer>
               </FilmBlock>
             );
